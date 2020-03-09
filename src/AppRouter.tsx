@@ -1,20 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { Index } from './pages';
 import { About } from './pages/about'
-import { UserContext, UserProvider } from './UserContext';
-import { UserInterface } from './Interface';
+import { UserProvider, UserContext } from './context/UserContext';
 
-function AppRouter()
+const AppRouter = (props: any) =>
 {
-const user:UserInterface = {
-    username:"Justin"
-}
-
-
-    const getUserName = () => {
-        return user.username;
-    };
+    const context = useContext(UserContext);
+    var isLogin = (context !== undefined && context.user.isLogin) ? true : false;
+    
     return(
         <Router>
             <div>
@@ -28,10 +22,8 @@ const user:UserInterface = {
                         </li>
                     </ul>
                 </nav>
-                <UserContext.Provider value={{user: user, getUserName: getUserName}}>
-                <Route path="/" exact component={Index} />
+                {(!isLogin ? <Route path="/" exact component={Index} /> : <Route path="/" exact component={About} />)}
                 <Route path="/about" component={About} />
-                </UserContext.Provider>
             </div>
         </Router>
     );

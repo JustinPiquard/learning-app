@@ -2,6 +2,7 @@ import React from 'react';
 // import logo from './logo.svg';
 import './App.css';
 import AppRouter from './AppRouter'
+import { UserProvider } from './context/UserContext';
 
 
 function App() {
@@ -22,7 +23,9 @@ function App() {
     //     </a>
     //   </header>
     // </div>
-    <AppRouter />
+    <UserProvider>
+      <AppRouter />
+    </UserProvider>
   );
 }
 
