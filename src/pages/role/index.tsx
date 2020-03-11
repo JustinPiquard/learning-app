@@ -1,14 +1,15 @@
 import React, { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
+import TableRole from '../../components/tableRole';
 
-export const About = (props: any) =>
+export const Role = (props: any) =>
 {
     const context = useContext(UserContext);
 
+
     return (
         <div>
-            <h1>About</h1>
-            <p>Welcome {context.user.username}</p>
+            <TableRole />
         </div>
         
         

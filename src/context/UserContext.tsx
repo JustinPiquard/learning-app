@@ -1,4 +1,4 @@
-import React, {createContext, useState} from 'react';
+import React, {createContext, useState, useEffect} from 'react';
 import { UserInterface } from '../Interface';
 import axios from 'axios'
 import { Redirect } from 'react-router-dom';
@@ -16,15 +16,33 @@ const {Consumer} = UserContext;
 function UserProvider(props: any)
 {
     const [user , setUser] = useState<UserInterface>({
+        id: "",
         username: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
         error:false,
         errorMessage:"",
-        isLogin: false
+        isLogin: false,
+        token: ""
     });
 
-    const mergeUserState = (partialState: any) => {
+    useEffect(() => {
+        if(user.id !== ""){
+            localStorage.setItem('userInformation',JSON.stringify(user))
+        }
+
+        var userInformation = localStorage.getItem("userInformation");
+        
+        if(userInformation !== null && user.id === "")
+        {
+            let userToMerge: UserInterface = JSON.parse(userInformation);
+            mergeUserState(userToMerge);
+        }
+    });
+
+    const mergeUserState = async (partialState: any) => {
     setUser(prevState => ({
         ...prevState,
         ...partialState
@@ -33,11 +51,21 @@ function UserProvider(props: any)
 
     const handleSubmit = async (event:any) => {
         event.preventDefault();
-        await axios.post(`https://localhost:44364/Account/Login`, user)
+        await axios.post(`https://localhost:44364/authenticate`, user)
       .then((res:any) => {
-        console.log(res);
-        console.log(res.data);
-        mergeUserState({error: false, errorMessage: "", isLogin: true});
+        var userInformation = res.data;
+        mergeUserState({
+            id: userInformation.id,
+            email: userInformation.email, 
+            firstName: userInformation.firstName,
+            lastName: userInformation.lastName,
+            isLogin: true, 
+            token: userInformation.token, 
+            error: false, 
+            errorMessage: "", 
+            password: ""
+        });
+            
         return <Redirect to={"/about"} />
       }).catch((error: any) =>
       {
@@ -45,11 +73,37 @@ function UserProvider(props: any)
       })
     };
 
+    const logout = async (event: any) => {
+        event.preventDefault();
+        await axios.post(`https://localhost:44364/logout`, null, {
+            headers: { "crossDomain":"true", "Authorization": `Bearer ${user.token}`, "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Credentials":"true"}
+          })
+        .then((res:any) => {
+            localStorage.removeItem('userInformation');
+          mergeUserState({
+              id: "",
+              email: "", 
+              firstName: "",
+              lastName: "",
+              isLogin: false, 
+              token: "", 
+              error: false, 
+              errorMessage: "", 
+              password: "",
+              username: ""
+          });
+          return <Redirect to={"/"} />
+        }).catch((error: any) =>
+        {
+            mergeUserState({error: true, errorMessage: "Error when trying to logout"});
+        })
+    }
+
     const getUserName = () => {
         return user.username;
     };
     return (
-        <UserContext.Provider value={{user, mergeUserState, getUserName, handleSubmit}} > { props.children }</UserContext.Provider>
+        <UserContext.Provider value={{user, mergeUserState, getUserName, handleSubmit, logout}} > { props.children }</UserContext.Provider>
     )
 }
 

@@ -1,16 +1,14 @@
 import React, { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
+import TableUser from '../../components/tableUser';
 
-export const About = (props: any) =>
+export const User = (props: any) =>
 {
     const context = useContext(UserContext);
 
     return (
         <div>
-            <h1>About</h1>
-            <p>Welcome {context.user.username}</p>
+            <TableUser />
         </div>
-        
-        
     );
 }
